@@ -1,10 +1,8 @@
 const UsersUrl = 'https://jsonplaceholder.typicode.com/users/'
-const TodDoURL = 'https://jsonplaceholder.typicode.com/users/1/todos'
-
-const selectUser = document.getElementById('user-todo')
-const listToDos = document.getElementById('todo-list')
+const ToDoURL = 'https://jsonplaceholder.typicode.com/todos'
 
 function getUsers() {
+    const selectUser = document.getElementById('user-todo')
     fetch(UsersUrl)
         .then(response => response.json())
         .then(users => {
@@ -13,20 +11,40 @@ function getUsers() {
                 userSelect.innerHTML = `${user.name}`
                 selectUser.appendChild(userSelect);
             });
-        });
+        })
+        .catch(error => {
+            alert(error);
+        })
+}
+
+function searchUser(todo, users) {
+    const user = users.find(user => user.id === todo.userId);
+    return user.name;
 }
 
 function getToDos() {
-    fetch(TodDoURL)
+    const listToDos = document.getElementById('todo-list')
+    fetch(ToDoURL)
         .then(response => response.json())
         .then(todos => {
-            todos.forEach(todo => {
-                const elem = document.createElement('li');
-                elem.innerHTML = `<input type="checkbox" id="isCompleted">
-                                <span>${todo.title}</span>`
-                listToDos.appendChild(elem);
-            });
-        });
+            fetch(UsersUrl)
+                .then(response => response.json())
+                .then(users => {
+                    todos.forEach(todo => {
+                        const elem = document.createElement('li');
+                        elem.classList.add("todo-item");
+                        elem.innerHTML = `<input type="checkbox" id="isCompleted" ${todo.completed ? "checked" : ""}>
+                                <span>${todo.title} <em>by</em> <b>${searchUser(todo, users)}</b></span>`
+                        listToDos.appendChild(elem);
+                    });
+                })
+                .catch(error => {
+                    alert(error);
+                })
+        })
+        .catch(error => {
+            alert(error);
+        })
 }
 
 getUsers()
