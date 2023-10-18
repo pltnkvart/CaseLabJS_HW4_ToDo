@@ -4,26 +4,35 @@ const ToDoURL = 'https://jsonplaceholder.typicode.com/todos/'
 let usersData = [];
 let todoData = [];
 
+// GET METHODS
 async function getUsers() {
-    let response = await fetch(UsersUrl);
-    if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status} - ${response.text}`);
+    try {
+        let response = await fetch(UsersUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+        let text = await response.json();
+        usersData = text;
+        addUsers();
+        getToDos();
+    } catch (e) {
+        alert(`Error: ${e.message} users`);
     }
-    let text = await response.json();
-    usersData = text;
-    addUser();
-    getToDos();
 }
 
 
 async function getToDos() {
-    let response = await fetch(ToDoURL);
-    if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status} - ${response.text}`);
+    try {
+        let response = await fetch(ToDoURL);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status} - ${response.text}`);
+        }
+        let text = await response.json();
+        todoData = text;
+        updateListToDo();
+    } catch (e) {
+        alert(`Error: ${e.message} todos`);
     }
-    let text = await response.json();
-    todoData = text;
-    updateListToDo();
 }
 
 function updateListToDo() {
@@ -34,7 +43,7 @@ function updateListToDo() {
     })
 }
 
-function addUser() {
+function addUsers() {
     const selectUserList = document.getElementById('user-todo');
     usersData.forEach(user => {
         userSelect = document.createElement('option');
@@ -57,6 +66,5 @@ function searchUser(todo) {
     const userFind = usersData.find(user => user.id === todo.userId);
     return userFind.name;
 }
-
 
 getUsers();
