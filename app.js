@@ -71,19 +71,33 @@ function searchUser(todo) {
     return userFind.name;
 }
 
-function changeCompleted(todo) {
-    fetch(ToDoURL + todo.id, {
-        method: 'PATCH',
-        body: JSON.stringify({
-            completed: !todo.completed
-        }),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-    })
-        .then(response => response.json())
-        .then(json => console.log(json))
+async function changeCompleted(todo) {
+    try {
+        let response = await fetch(ToDoURL + todo.id, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                completed: !todo.completed
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+        let result = await response.json();
+        console.log(result);
+        todoData.find((elem) => elem.id === todo.id).completed = !todo.completed;
+        console.log("asdasda", todoData);
+    } catch (e) {
+        alert(`Error: ${e.message} users`);
+    }
 }
+
+window.addEventListener("offline", (e) => {
+    console.log("offline");
+});
+
+window.addEventListener("online", (e) => {
+  console.log("online");
+});
 
 getUsers();
 // changeCompleted(1);
