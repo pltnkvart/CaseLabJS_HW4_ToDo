@@ -59,6 +59,10 @@ function createToDo(todo) {
     elem.innerHTML = `<input type="checkbox" id="isCompleted" ${todo.completed ? "checked" : ""}>
                         <span value >${todo.title} <em>by</em> <b>${searchUser(todo)}</b></span> 
                         <div class="close" onclick="removeToDo(${todo.id})" id="close">×</div>`
+    const checkbox = elem.querySelector("#isCompleted");
+    checkbox.addEventListener("change", () => {
+        changeCompleted(todo);
+    });
     return elem;
 }
 
@@ -67,4 +71,19 @@ function searchUser(todo) {
     return userFind.name;
 }
 
+function changeCompleted(todo) {
+    fetch(ToDoURL + todo.id, {
+        method: 'PATCH',
+        body: JSON.stringify({
+            completed: !todo.completed
+        }),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
+        .then(response => response.json())
+        .then(json => console.log(json))
+}
+
 getUsers();
+// changeCompleted(1);
