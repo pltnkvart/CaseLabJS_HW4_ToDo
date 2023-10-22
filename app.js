@@ -20,7 +20,6 @@ async function getUsers() {
     }
 }
 
-
 async function getToDos() {
     try {
         let response = await fetch(ToDoURL);
@@ -36,7 +35,8 @@ async function getToDos() {
 }
 
 function updateListToDo() {
-    const listToDos = document.getElementById('todo-list');
+    let listToDos = document.getElementById('todo-list');
+    listToDos.innerHTML = '';
     todoData.forEach(todo => {
         let elem = createToDo(todo);
         listToDos.appendChild(elem);
@@ -58,7 +58,7 @@ function createToDo(todo) {
     elem.setAttribute("value", todo.id);
     elem.innerHTML = `<input type="checkbox" id="isCompleted" ${todo.completed ? "checked" : ""}>
                         <span value >${todo.title} <em>by</em> <b>${searchUser(todo)}</b></span> 
-                        <div class="close" onclick="removeToDo(${todo.id})" id="close">×</div>`
+                        <div class="close" onclick="deleteToDo(${todo.id})" id="close">×</div>`
     const checkbox = elem.querySelector("#isCompleted");
     checkbox.addEventListener("change", () => {
         changeCompleted(todo);
@@ -71,6 +71,7 @@ function searchUser(todo) {
     return userFind.name;
 }
 
+// PATCH METHOD
 async function changeCompleted(todo) {
     try {
         let response = await fetch(ToDoURL + todo.id, {
@@ -85,19 +86,64 @@ async function changeCompleted(todo) {
         let result = await response.json();
         console.log(result);
         todoData.find((elem) => elem.id === todo.id).completed = !todo.completed;
-        console.log("asdasda", todoData);
     } catch (e) {
-        alert(`Error: ${e.message} users`);
+        alert(`Error changing TODO: ${e.message}`);
     }
 }
 
-window.addEventListener("offline", (e) => {
-    console.log("offline");
-});
+function deleteInArr(todoID) {
+    const index = todoData.findIndex(todoArr => todoArr.id === todoID)
+    if (index > -1) {
+        todoData.splice(index, 1);
+        updateListToDo();
+    }
+}
 
-window.addEventListener("online", (e) => {
-  console.log("online");
-});
+// DELETE METHOD
+async function deleteToDo(todoID) {
+    try {
+        let response = await fetch(ToDoURL + todoID, {
+            method: 'DELETE',
+        })
+        let result = await response.json();
+        console.log(result);
+        if (response.ok) {
+            deleteInArr(todoID);
+        }
+    } catch (e) {
+        alert(`Error deleting TODO: ${e.message}`);
+    }
+}
+
+// PUT METHOD
+async function postToDo(userID, textToDo) {
+    try {
+        let response = await fetch('https://jsonplaceholder.typicode.com/todos', {
+            method: 'POST',
+            body: JSON.stringify({
+                userId: userID,
+                title: textToDo,
+                completed: false
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+        let result = await response.json()
+        console.log(result);
+        if(response.ok){
+            let newToDo = {
+                userId: userID,
+                title: textToDo,
+                completed: false
+            }
+            todoData.unshift(newToDo);
+            updateListToDo();
+        }
+    } catch (e) {
+        alert(`Error adding TODO: ${e.message}`);
+    }
+}
+
 
 getUsers();
-// changeCompleted(1);
