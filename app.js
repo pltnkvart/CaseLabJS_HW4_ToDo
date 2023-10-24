@@ -4,6 +4,9 @@ const ToDoURL = 'https://jsonplaceholder.typicode.com/todos/'
 let usersData = [];
 let todoData = [];
 
+const applicantForm = document.forms[0]
+applicantForm.addEventListener('submit', handleFormSubmit)
+
 // GET METHODS
 async function getUsers() {
     try {
@@ -57,7 +60,7 @@ function createToDo(todo) {
     elem.classList.add("todo-item");
     elem.setAttribute("value", todo.id);
     elem.innerHTML = `<input type="checkbox" id="isCompleted" ${todo.completed ? "checked" : ""}>
-                        <span value >${todo.title} <em>by</em> <b>${searchUser(todo)}</b></span> 
+                        <span value >${todo.title} <em>by</em> <b>${searchUserByID(todo)}</b></span> 
                         <div class="close" onclick="deleteToDo(${todo.id})" id="close">×</div>`
     const checkbox = elem.querySelector("#isCompleted");
     checkbox.addEventListener("change", () => {
@@ -66,7 +69,7 @@ function createToDo(todo) {
     return elem;
 }
 
-function searchUser(todo) {
+function searchUserByID(todo) {
     const userFind = usersData.find(user => user.id === todo.userId);
     return userFind.name;
 }
@@ -83,6 +86,9 @@ async function changeCompleted(todo) {
                 "Content-type": "application/json; charset=UTF-8"
             }
         })
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
         let result = await response.json();
         console.log(result);
         todoData.find((elem) => elem.id === todo.id).completed = !todo.completed;
@@ -105,6 +111,9 @@ async function deleteToDo(todoID) {
         let response = await fetch(ToDoURL + todoID, {
             method: 'DELETE',
         })
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
         let result = await response.json();
         console.log(result);
         if (response.ok) {
@@ -115,34 +124,50 @@ async function deleteToDo(todoID) {
     }
 }
 
-// PUT METHOD
-async function postToDo(userID, textToDo) {
+function searchUserByName(name) {
+    const user = usersData.find(user => user.name === name);
+    if (user) {
+        return user.id;
+    }
+}
+
+// POST METHOD
+async function postToDo(data) {
+    let newToDo = {
+        userId: searchUserByName(data.get('user')),
+        title: data.get('todo'),
+        completed: false
+    }
     try {
-        let response = await fetch('https://jsonplaceholder.typicode.com/todos', {
+        let response = await fetch(ToDoURL, {
             method: 'POST',
-            body: JSON.stringify({
-                userId: userID,
-                title: textToDo,
-                completed: false
-            }),
+            body: JSON.stringify(newToDo),
             headers: {
                 "Content-type": "application/json; charset=UTF-8"
             }
         })
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
         let result = await response.json()
         console.log(result);
-        if(response.ok){
-            let newToDo = {
-                userId: userID,
-                title: textToDo,
-                completed: false
-            }
+        if (response.ok) {
             todoData.unshift(newToDo);
             updateListToDo();
         }
     } catch (e) {
         alert(`Error adding TODO: ${e.message}`);
     }
+}
+
+function serializeForm(formNode) {
+    return new FormData(formNode)
+}
+
+function handleFormSubmit(event) {
+    event.preventDefault()
+    const data = serializeForm(applicantForm)
+    postToDo(data)
 }
 
 
