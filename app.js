@@ -167,7 +167,11 @@ function serializeForm(formNode) {
 function handleFormSubmit(event) {
     event.preventDefault()
     const data = serializeForm(applicantForm)
-    postToDo(data)
+    if (data.get('user') === null) {
+        alert('Please select a user from the dropdown.');
+    } else {
+        postToDo(data);
+    }
 }
 
 
